@@ -1,2 +1,2 @@
-# winphp-manager
+# Windows PHP Manager (WPM)
 Manages PHP installations on Windows.
