@@ -83,7 +83,7 @@ Function Set-PHPConfig {
 	if( Test-Path -Path "php.ini" ) {
 		$FileContent = Get-IniContent "php.ini";
 		$FileContent.$Group.$Name = $Value;
-		Out-IniFile -InputObject $FileContent -FilePath "php.ini"-Force;
+		Out-IniFile -InputObject $FileContent -FilePath "php.ini" -Force;
 	} else {
 		Write-Output "No PHP configuration file was discovered.";
 	}
