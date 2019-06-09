@@ -13,13 +13,15 @@ Function Invoke-PHPDownload {
 		[string]$Version
 	)
 
-	Get-Download $Version
+	Get-PHPDownload $Version
+	Expand-Archive -Path "${env:temp}\win-php\php-${Version}.zip" -DestinationPath $Version
+
 }
 
-Function Get-Download {
+Function Get-PHPDownload {
 	param(
 		[string]$Version,
-		[int]$Archive = 0
+		[int]$Archive = $false
 	)
 
 	# Grab the PHP version suited to the current architecture.
@@ -32,7 +34,7 @@ Function Get-Download {
 
 	# Pull from Archive if requested.
 	New-Variable -Name "RequestURL"
-	if ( $Archive -eq 0 ) {
+	if ( $Archive -eq $false ) {
 		Set-Variable -Name "RequestURL" -Value "${WinPHPLoc}/php-${Version}-nts-Win32-VC15-${CurrentArch}.zip"
 	} else {
 		Set-Variable -Name "RequestURL" -Value "${WinPHPLoc}/archives/php-${Version}-nts-Win32-VC15-${CurrentArch}.zip"
@@ -42,16 +44,27 @@ Function Get-Download {
 		-Name "DownloadLink" `
 		-Value $RequestURL
 
-	#Write-Host $RequestURL
-	try {
-		Invoke-WebRequest -Uri $DownloadLink -OutFile "php-${Version}.zip" -ErrorAction Stop
-	} catch [System.Net.WebException] {
-		Write-Verbose "An exception was caught: $($_.Exception.Message)"
-		if ( $Archive -eq 0 ) {
-			Get-Download $Version 1
-		} else {
-			Write-Host "Unable to find the requested PHP version ${Version}, on either live or archive."
-			exit
+	if( ! ( Test-Path -Path "${env:temp}\win-php" ) ) {
+		New-Item -Path "${env:temp}\win-php" -ItemType "directory"
+	}
+
+	# Check if a cached download is available.
+	if( Test-Path -Path "${env:temp}\win-php\php-${Version}.zip" ) {
+		Write-Host "Extracting ${Version} from cache."
+	} else {
+		# Attempt to download the requested PHP version.
+		try {
+			Invoke-WebRequest `
+				-Uri $DownloadLink `
+				-OutFile "${env:temp}\win-php\php-${Version}.zip" `
+				-ErrorAction Stop
+		} catch [System.Net.WebException] {
+			if ( $Archive -eq $false ) {
+				Get-PHPDownload $Version $true
+			} else {
+				Write-Host "Unable to find the requested PHP version ${Version}, either current or archived."
+				exit
+			}
 		}
 	}
 }
