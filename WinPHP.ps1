@@ -9,13 +9,14 @@ Function Get-Version {
 }
 
 Function Invoke-PHPDownload {
-	param(
-		[string]$Version
-	)
+	param( [string]$Version )
 
-	Get-PHPDownload $Version
-	Expand-Archive -Path "${env:temp}\win-php\php-${Version}.zip" -DestinationPath $Version
-
+	if ( ! ( Test-Path -Path $Version ) ) { 
+		Get-PHPDownload $Version
+		Expand-Archive -Path "${env:temp}\win-php\php-${Version}.zip" -DestinationPath $Version
+	} else {
+		Write-Output "The requested PHP version exists in this directory."
+	}
 }
 
 Function Get-PHPDownload {
