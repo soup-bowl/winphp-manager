@@ -80,9 +80,13 @@ Function Set-PHPConfig {
 		[string]$Value
 	)
 
-	$FileContent = Get-IniContent "php.ini";
-	$FileContent.$Group.$Name = $Value;
-	Out-IniFile -InputObject $FileContent -FilePath "php.ini"-Force
+	if( Test-Path -Path "php.ini" ) {
+		$FileContent = Get-IniContent "php.ini";
+		$FileContent.$Group.$Name = $Value;
+		Out-IniFile -InputObject $FileContent -FilePath "php.ini"-Force;
+	} else {
+		Write-Output "No PHP configuration file was discovered.";
+	}
 }
 
 # Operation decider.
@@ -99,7 +103,7 @@ switch ( $Operation.ToLower() ) {
 		}
 		Import-Module PsIni;
 		
-		Set-PHPConfig $Group $Name $Value
+		Set-PHPConfig $Group $Name $Value;
 		break;
 	}
 	default {
