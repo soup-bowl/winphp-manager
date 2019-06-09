@@ -2,6 +2,7 @@ param (
 	[Parameter(Mandatory=$true)][string]$Operation,
 	[string]$Version
 )
+
 New-Variable -Name "WinPHPLoc" -Value "https://windows.php.net/downloads/releases";
 
 Function Get-Version {
@@ -65,10 +66,20 @@ Function Get-PHPDownload {
 				Get-PHPDownload $Version $true;
 			} else {
 				Write-Host "Unable to find the requested PHP version ${Version}, either current or archived.";
-				exit
+				exit;
 			}
 		}
 	}
 }
 
-Invoke-PHPDownload $Version;
+# Operation decider.
+switch ( $Operation.ToLower() ) {
+	"get" {
+		Invoke-PHPDownload $Version;
+		break;
+	}
+	default {
+		Write-Output "Unexpected operation '${Operation}'.";
+		break;
+	}
+}
