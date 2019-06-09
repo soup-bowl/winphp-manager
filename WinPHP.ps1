@@ -1,9 +1,10 @@
 param (
 	[Parameter(Mandatory=$true)][string]$Operation,
-	[string]$Version
+	[string]$Version,
+	[string]$Group,
+	[string]$Name,
+	[string]$Value
 )
-
-New-Variable -Name "WinPHPLoc" -Value "https://windows.php.net/downloads/releases";
 
 Function Get-Version {
 	Write-Host "Windows PHP Manager, by soup-bowl.";
@@ -72,10 +73,33 @@ Function Get-PHPDownload {
 	}
 }
 
+Function Set-PHPConfig {
+	param(
+		[string]$Group,
+		[string]$Name,
+		[string]$Value
+	)
+
+	$FileContent = Get-IniContent "php.ini";
+	$FileContent.$Group.$Name = $Value;
+	Out-IniFile -InputObject $FileContent -FilePath "php.ini"-Force
+}
+
 # Operation decider.
 switch ( $Operation.ToLower() ) {
 	"get" {
+		New-Variable -Name "WinPHPLoc" -Value "https://windows.php.net/downloads/releases";
 		Invoke-PHPDownload $Version;
+		break;
+	}
+	"config" {
+		if ( ! ( Get-Module -ListAvailable -Name PsIni ) ) {
+			Write-Host "PsIni is required for WinPHP to configure PHP correctly.";
+			exit;
+		}
+		Import-Module PsIni;
+		
+		Set-PHPConfig $Group $Name $Value
 		break;
 	}
 	default {
