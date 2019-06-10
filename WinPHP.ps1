@@ -1,9 +1,9 @@
 param (
 	[Parameter(Mandatory=$true)][string]$Operation,
 	[string]$Version,
-	[string]$Group,
-	[string]$Name,
-	[string]$Value
+	[string]$Section,
+	[string]$Key,
+	[string]$Property
 )
 
 Function Get-Version {
@@ -75,19 +75,19 @@ Function Get-PHPDownload {
 
 Function Set-PHPConfig {
 	param(
-		[string]$Group,
-		[string]$Name,
-		[string]$Value
+		[string]$Section,
+		[string]$Key,
+		[string]$Property
 	)
 
 	if ( Test-Path -Path "php.ini" ) {
 		$FileContent = Get-IniContent "php.ini";
-		$INIGroup    = $FileContent.$Group;
-		if ( $null -ne $INIGroup ) {
-			$FileContent.$Group.$Name = $Value;
+		$INISect     = $FileContent.$Section;
+		if ( $null -ne $INISect ) {
+			$FileContent.$Section.$Key = $Property;
 			Out-IniFile -InputObject $FileContent -FilePath "php.ini" -Force;
 		} else {
-			Write-Output "Group not found.";
+			Write-Output "Section not found.";
 		}
 	} else {
 		Write-Output "No PHP configuration file was discovered.";
@@ -108,7 +108,7 @@ switch ( $Operation.ToLower() ) {
 		}
 		Import-Module PsIni;
 		
-		Set-PHPConfig $Group $Name $Value;
+		Set-PHPConfig $Section $Key $Property;
 		break;
 	}
 	default {
